@@ -24,7 +24,11 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
             let resData = '';
             switch(req.method) {
                 case 'GET':
-                    get(req.url);
+                    try {
+                        get(req.url);
+                    } catch {
+                        show400();
+                    }
                 break;
                 case 'POST': 
                     resData = '';
@@ -57,7 +61,11 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
                     req.on('error', show500);
                 break;
                 case 'DELETE':
-                    del(req.url);
+                    try {
+                        del(req.url);
+                    } catch {
+                        show400();
+                    }
                 break;
                 default: show400();
             }
