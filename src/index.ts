@@ -14,26 +14,44 @@ const port = +process.env.PORT || 4000;
 http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     try {
         res.setHeader('Content-type', 'application/json');
-        console.log(req.url, req.url.length);
-        if ((req.url.length === 10 && req.url !== '/api/users') 
+        if ((req.url.length <= 10 && req.url !== '/api/users') 
             || (req.url.length > 10 && req.url.substring(0, 11) !== '/api/users/') ) {
             show404();
         } else {
+            let resData = '';
             switch(req.method) {
                 case 'GET': get(req.url);
                 break;
                 case 'POST': 
-                    let resData = '';
+                    resData = '';
                     req.on('data', (chunk) => resData += chunk);
                     req.on('end', () => {
                         try {
-                            const data = JSON.parse(resData) as Partial<IUser>;
-                            post(req.url, data);
+                            if(req.url.length > 11) {
+                                show400();
+                            } else {
+                                const data: Partial<IUser> = JSON.parse(resData);
+                                post(data);
+                            }
                         } catch {
-                            show500();
+                            show400();
                         }
                     })
                     req.on('error', show500);
+                break;
+                case 'PUT': 
+                    resData = '';
+                    req.on('data', (chunk) => resData += chunk);
+                    req.on('end', () => {
+                        try {
+                            const data: Partial<IUser> = JSON.parse(resData);
+                            put(req.url, data);
+                        } catch {
+                            show400();
+                        }
+                    })
+                    req.on('error', show500);
+                break;
             }
         }
     } catch {
@@ -66,7 +84,7 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
         }
     }
 
-    function post(url: string, user: Partial<IUser>) {
+    function post(user: Partial<IUser>) {
         if (!checkForValid(user)) {
             return show400();
         }
@@ -79,6 +97,33 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
         db.push(newUser);
         res.statusCode = 201;
         res.end(JSON.stringify(newUser));
+    }
+
+    function put(url: string, user: Partial<IUser>) {
+        const id = url[url.length - 1] == '/' 
+            ? url.substring(11, url.length - 1) 
+            : url.substring(11);
+        if (uuidValidate(id)) {
+            const index = db.findIndex(el => el.id === id);
+            if (index == -1) {
+                return show404();
+            }
+            console.log('index is OK:', index);
+            const newUser: IUser = {
+                id: id,
+                username: user.username,
+                age: user.age,
+                hobbies: user.hobbies
+            }
+            if (!checkForValid(newUser)) {
+                return show400();
+            }
+            db[index] = newUser;
+            res.statusCode = 200;
+            res.end(JSON.stringify(newUser));
+        } else {
+            show400();
+        }
     }
 
     // Answers
