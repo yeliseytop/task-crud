@@ -8,7 +8,7 @@ interface IUser {
     hobbies: string[];
 }
 
-const db: IUser[] = [];
+let db: IUser[] = [];
 
 const port = +process.env.PORT || 4000;
 http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
@@ -20,7 +20,8 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
         } else {
             let resData = '';
             switch(req.method) {
-                case 'GET': get(req.url);
+                case 'GET':
+                    get(req.url);
                 break;
                 case 'POST': 
                     resData = '';
@@ -52,6 +53,10 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
                     })
                     req.on('error', show500);
                 break;
+                case 'DELETE':
+                    del(req.url);
+                break;
+                default: show400();
             }
         }
     } catch {
@@ -108,7 +113,6 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
             if (index == -1) {
                 return show404();
             }
-            console.log('index is OK:', index);
             const newUser: IUser = {
                 id: id,
                 username: user.username,
@@ -124,6 +128,22 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
         } else {
             show400();
         }
+    }
+
+    function del(url: string) {
+        const id = url[url.length - 1] == '/' 
+            ? url.substring(11, url.length - 1) 
+            : url.substring(11);
+        if (!uuidValidate(id)) {
+            return show400()
+        }
+        const index = db.findIndex(el => el.id === id);
+        if (index == -1) {
+            return show404();
+        }
+        db = db.filter((_, i) => i != index);
+        res.statusCode = 204;
+        res.end();
     }
 
     // Answers
