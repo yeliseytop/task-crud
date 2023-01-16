@@ -3,7 +3,7 @@ import { v4 as uuid, validate as uuidValidate } from 'uuid';
 import * as dotenv from 'dotenv';
 dotenv.config()
 
-interface IUser {
+export interface IUser {
     id: string;
     username: string;
     age: number;
@@ -13,8 +13,7 @@ interface IUser {
 let db: IUser[] = [];
 
 const port = +process.env.PORT || 4000;
-console.log(process.env.PORT);
-http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
+export const server = http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     try {
         res.setHeader('Content-type', 'application/json');
         if ((req.url.length <= 10 && req.url !== '/api/users') 
