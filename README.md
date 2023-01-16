@@ -53,3 +53,6 @@ For starting tests use this command:
 ```bash
 npm test
 ```
+
+## Change default port
+By default, port=4000, to change the port number, create a `.env` file in root dirrectory and write `PORT="4010"` into this file, to set the port number 4010.
