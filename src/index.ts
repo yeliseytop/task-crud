@@ -1,5 +1,7 @@
 import http from 'http';
 import { v4 as uuid, validate as uuidValidate } from 'uuid';
+import * as dotenv from 'dotenv';
+dotenv.config()
 
 interface IUser {
     id: string;
@@ -11,6 +13,7 @@ interface IUser {
 let db: IUser[] = [];
 
 const port = +process.env.PORT || 4000;
+console.log(process.env.PORT);
 http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
     try {
         res.setHeader('Content-type', 'application/json');
@@ -167,7 +170,11 @@ http.createServer((req: http.IncomingMessage, res: http.ServerResponse) => {
 
     // Other
     function checkForValid(user: Partial<IUser>): Boolean {
-        return user ? true : false
+        const isCorrectName = user.username && typeof user.username === 'string';
+        const isCorrectAge = user.age && typeof user.age === 'number';
+        const isCorrectHobbies = user.hobbies && user.hobbies instanceof Array
+            && user.hobbies.length === 0 || user.hobbies.every(el => typeof el === 'string');
+        return isCorrectName && isCorrectAge && isCorrectHobbies;
     }
 }).listen(port, 'localhost', () => {
     console.dir(`Sterted on port: ${port}`);
